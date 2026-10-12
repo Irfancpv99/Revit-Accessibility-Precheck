@@ -11,3 +11,7 @@ RevitAPIUI.dll
 *.rfa
 *.rte
 *.ifc
+
+# Local machine paths (copy the .example file)
+*.local.props
+*.dll

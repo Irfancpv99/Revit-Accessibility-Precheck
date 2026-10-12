@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Machine-specific Revit path. Not committed. Falls back to the REVIT_2026_DIR environment variable. -->
+  <Import Project="RevitPath.local.props" Condition="Exists('RevitPath.local.props')" />
+  <PropertyGroup>
+    <RevitInstallDir Condition="'$(RevitInstallDir)' == ''">$(REVIT_2026_DIR)</RevitInstallDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>RevitAccessibility.Revit</RootNamespace>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="RevitAPI">
+      <HintPath>$(RevitInstallDir)RevitAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>$(RevitInstallDir)RevitAPIUI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RevitAccessibility.Core\RevitAccessibility.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Register and config ship next to the add-in DLL. -->
+    <None Include="..\..\rules\rule-register.csv" Link="rule-register.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="RevitAccessibility.addin" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

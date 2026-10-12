@@ -1,0 +1,6 @@
+<!-- Copy to RevitPath.local.props (git-ignored) and set your Revit 2026 install folder. -->
+<Project>
+  <PropertyGroup>
+    <RevitInstallDir>Z:\revit\program file\Autodesk\Revit 2026\</RevitInstallDir>
+  </PropertyGroup>
+</Project>

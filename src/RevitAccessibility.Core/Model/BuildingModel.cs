@@ -11,6 +11,7 @@ namespace RevitAccessibility.Core.Model;
 /// False: designer marked it as another door (75 cm rule).
 /// Null: not classified; the result is "Cannot evaluate".
 /// </param>
-public sealed record DoorDto(string Uid, string Level, double? ClearWidthMm, bool? IsAccessDoor);
+/// <param name="Mark">Door Mark for reporting only; may be null.</param>
+public sealed record DoorDto(string Uid, string Level, double? ClearWidthMm, bool? IsAccessDoor, string? Mark = null);
 
 public sealed record BuildingModel(IReadOnlyList<DoorDto> Doors);

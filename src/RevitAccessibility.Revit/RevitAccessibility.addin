@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Name>Accessibility Pre-Check</Name>
+    <Assembly>RevitAccessibility\RevitAccessibility.Revit.dll</Assembly>
+    <FullClassName>RevitAccessibility.Revit.RunCheckCommand</FullClassName>
+    <AddInId>7c7876e6-a1c4-4b44-a46f-c9b0c9395baf</AddInId>
+    <VendorId>RAPC</VendorId>
+    <VendorDescription>Revit Accessibility Pre-Check (pre-check only; not a compliance certificate)</VendorDescription>
+    <Text>Accessibility Pre-Check</Text>
+    <Description>Checks doors against the rule register. Pre-check only.</Description>
+  </AddIn>
+</RevitAddIns>
