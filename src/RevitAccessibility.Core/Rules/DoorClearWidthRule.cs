@@ -41,11 +41,14 @@ public sealed class DoorClearWidthRule : IRule
 
         return width.Value >= required
             ? new Finding(Id, _thresholds.ClauseRef, Severity.Info, FindingStatus.Pass, door.Uid,
-                $"Clear width {width.Value:0} mm meets the minimum {required:0} mm for {kind}.")
+                Label($"Clear width {width.Value:0} mm meets the minimum {required:0} mm for {kind}."))
             : new Finding(Id, _thresholds.ClauseRef, Severity.Error, FindingStatus.Fail, door.Uid,
-                $"Clear width {width.Value:0} mm is below the minimum {required:0} mm for {kind} (level '{door.Level}').");
+                Label($"Clear width {width.Value:0} mm is below the minimum {required:0} mm for {kind} (level '{door.Level}')."));
     }
 
     private Finding CannotEvaluate(DoorDto door, string message) =>
-        new(Id, _thresholds.ClauseRef, Severity.Info, FindingStatus.CannotEvaluate, door.Uid, message);
+        new(Id, _thresholds.ClauseRef, Severity.Info, FindingStatus.CannotEvaluate, door.Uid, Label(message));
+
+    private string Label(string message) =>
+        _thresholds.UnverifiedNote is null ? message : $"{message} [{_thresholds.UnverifiedNote}]";
 }
