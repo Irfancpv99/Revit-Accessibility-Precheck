@@ -5,7 +5,7 @@
     <RevitInstallDir Condition="'$(RevitInstallDir)' == ''">$(REVIT_2026_DIR)</RevitInstallDir>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -24,6 +24,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Using Include="System.IO" />
     <ProjectReference Include="..\RevitAccessibility.Core\RevitAccessibility.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
