@@ -8,7 +8,7 @@ A pre-check tool that reads a Revit model, tests elements against accessibility 
 
 ## 2. Decisions already made (do not change without asking the owner)
 
-- **Platform:** Revit 2026 only, Windows, .NET 8, C#. No ArchiCAD.
+- **Platform:** Revit 2026 only, Windows, C#. No ArchiCAD. Core and Core.Tests: .NET 8. Revit add-in: .NET 10 (`net10.0-windows`), because Revit 2026.5 runs on .NET 10 and its API will not compile against .NET 8. Building the add-in needs the .NET 10 SDK. Changed 2026-10-12 with owner approval.
 - **Scope:** public buildings first (DPR 503/1996). Private buildings are a later phase (DM 236/1989 as source).
 - **Licence:** free for now; a paid version may come later. Do not add licence text or paid features without asking.
 - **Verification:** every rule needs two sign-offs, a practising architect and a university professor. The professor is not named yet; do not invent names.
@@ -81,8 +81,8 @@ Do not claim tests passed unless they ran and passed. Report the exact command a
 
 ## 7. Revit add-in (next phase, to build)
 
-- Project `RevitAccessibility.Revit`, net8.0-windows, WPF enabled, x64.
-- Reference the Revit 2026 API through the official Autodesk NuGet package. Verify the exact package name and version on NuGet before adding it. Do not guess, and do not reference DLLs by hardcoded `C:\Program Files` paths in committed files.
+- Project `RevitAccessibility.Revit`, net10.0-windows, WPF enabled, x64.
+- Reference the Revit 2026 API from the owner's own Revit install. No Autodesk-published API package exists on nuget.org (checked 2026-10-12). The path comes from `RevitPath.local.props` (git-ignored; copy `RevitPath.local.props.example`) or the `REVIT_2026_DIR` environment variable. Never commit a machine path or an Autodesk DLL.
 - Components:
   - `ModelSnapshotBuilder`: reads doors (category OST_Doors, instances only), level name, Mark, clear-width parameter, and the Access door parameter. Converts feet to mm with `UnitUtils.ConvertFromInternalUnits(value, UnitTypeId.Millimeters)`. Missing parameter returns null, never 0.
   - `RunCheckCommand`: `[Transaction(TransactionMode.ReadOnly)]`, builds the snapshot, runs the engine, opens the results window.
