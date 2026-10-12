@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Never commit Autodesk binaries or client data
+RevitAPI.dll
+RevitAPIUI.dll
+*.rvt
+*.rfa
+*.rte
+*.ifc

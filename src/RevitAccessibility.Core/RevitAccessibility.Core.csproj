@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>RevitAccessibility.Core</RootNamespace>
+  </PropertyGroup>
+  <!-- No Autodesk references and no package references: this library must run without Revit. -->
+</Project>
