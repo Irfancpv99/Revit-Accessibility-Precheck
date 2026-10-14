@@ -219,3 +219,28 @@ A 2026 add-in does not load in Revit 2024. Keep separate builds per version.
 `*.rte`, `*.ifc`, and `RevitAPI.dll` / `RevitAPIUI.dll`.
 
 Run `git status` before the first commit and read every line.
+
+## 3.8 Register-driven rules (no new code for simple length checks)
+
+Any register row that is **not** one of the two door clear-width rows is turned into a
+`ParameterRule` at run time. A row means: "parameter `Parameter` of every `Category` element
+must be `>=` (or `<=`) `Threshold`", with the value converted to millimetres by the loader
+(`cm` and `mm` units are supported).
+
+To add a simple rule you add a register row (with the owner's approval and the two sign-offs),
+and no code. The row needs: a numeric threshold, a unit of `cm` or `mm`, an operator of `>=` or
+`<=`, a severity of `Info`, `Warning` or `Error`, a clause reference, a Category and a Parameter.
+
+Supported categories today: Doors, Windows, Walls, Rooms, Floors, Stairs, Ramps, Railings.
+The parameter must be a Revit **Length** parameter on the element or its type.
+
+Rules that cannot run (for example a `[TBD]` threshold, an unsupported category or operator)
+are listed under "Rules not run" in the results window and in the log. They are never skipped
+silently. A value of 0 is treated as "not measured" (Cannot evaluate). Rows whose status is not
+Verified produce findings labelled UNVERIFIED.
+
+Rules that need geometry (ramp slope, corridor clear width, turning space) are not covered by
+this mechanism and need dedicated code.
+
+All comparisons allow 0.0005 mm of slack (`MeasurementTolerance`), because Revit stores lengths
+in feet and an exact 800 mm can come back as 799.9999999 mm.

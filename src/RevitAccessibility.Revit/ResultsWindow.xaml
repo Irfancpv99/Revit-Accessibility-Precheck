@@ -23,6 +23,8 @@
             <TextBlock x:Name="SummaryText" FontSize="14" FontWeight="SemiBold" AutomationProperties.Name="Summary"/>
             <TextBlock x:Name="ParameterInfo" FontSize="11" Foreground="#555555" TextWrapping="Wrap"
                        AutomationProperties.Name="Parameters used"/>
+            <TextBlock x:Name="NotRunText" FontSize="11" Foreground="#9A3412" TextWrapping="Wrap" Visibility="Collapsed"
+                       AutomationProperties.Name="Rules not run"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,6">

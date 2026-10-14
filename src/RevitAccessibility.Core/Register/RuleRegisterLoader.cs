@@ -7,6 +7,8 @@ namespace RevitAccessibility.Core.Register;
 public sealed record RegisterRule(
     string RuleId,
     string Clause,
+    string Category,
+    string Parameter,
     string Operator,
     double ThresholdMm,
     string Severity,
@@ -30,7 +32,7 @@ public sealed record RegisterLoadResult(IReadOnlyList<RegisterRule> Rules, IRead
 /// </summary>
 public static class RuleRegisterLoader
 {
-    private static readonly string[] RequiredColumns = ["RuleID", "Clause", "Operator", "Threshold", "Unit", "Severity", "Status"];
+    private static readonly string[] RequiredColumns = ["RuleID", "Clause", "Category", "Parameter", "Operator", "Threshold", "Unit", "Severity", "Status"];
 
     public static RegisterLoadResult LoadFile(string path) => Load(File.ReadAllText(path));
 
@@ -92,7 +94,7 @@ public static class RuleRegisterLoader
                 continue;
             }
 
-            rules.Add(new RegisterRule(id, clause, Get("Operator"), value * factor.Value, Get("Severity"), Get("Status")));
+            rules.Add(new RegisterRule(id, clause, Get("Category"), Get("Parameter"), Get("Operator"), value * factor.Value, Get("Severity"), Get("Status")));
         }
 
         return new RegisterLoadResult(rules, errors);

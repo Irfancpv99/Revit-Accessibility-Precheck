@@ -29,8 +29,15 @@ public sealed class RunCheckCommand : IExternalCommand
             var register = RuleRegisterLoader.LoadFile(Path.Combine(assemblyDir, "rule-register.csv"));
             var thresholds = DoorClearWidthThresholds.FromRegister(register);
 
-            var model = new ModelSnapshotBuilder(config).Build(uiDoc.Document);
-            var findings = new RuleEngine([new DoorClearWidthRule(thresholds)]).Run(model);
+            var ruleSet = ParameterRuleFactory.FromRegister(register,
+                [DoorClearWidthThresholds.EntryRuleId, DoorClearWidthThresholds.OtherRuleId]);
+            var notRun = new List<string>(ruleSet.NotRun);
+
+            var model = new ModelSnapshotBuilder(config).Build(uiDoc.Document, ruleSet.Rules.Select(r => r.Spec).ToList(), notRun);
+            var rules = new List<IRule> { new DoorClearWidthRule(thresholds) };
+            rules.AddRange(ruleSet.Rules);
+            var findings = new RuleEngine(rules).Run(model);
+            foreach (var n in notRun) AddinLog.Write("  Rule not run: " + n);
 
             // ExternalEvent must be created here, inside a valid Revit API context.
             var handler = new SelectElementHandler();
@@ -39,7 +46,7 @@ public sealed class RunCheckCommand : IExternalCommand
             string parameterInfo = $"Parameters read: clear width = '{config.ClearWidthParameter}', access door = '{config.AccessDoorParameter}' (config: {config.Source})";
 
             _window?.Close();
-            _window = new ResultsWindow(model, findings, thresholds.UnverifiedNote, parameterInfo, handler, externalEvent);
+            _window = new ResultsWindow(model, findings, thresholds.UnverifiedNote, parameterInfo, notRun, handler, externalEvent);
             new System.Windows.Interop.WindowInteropHelper(_window) { Owner = commandData.Application.MainWindowHandle };
             _window.Show(); // modeless
             return Result.Succeeded;

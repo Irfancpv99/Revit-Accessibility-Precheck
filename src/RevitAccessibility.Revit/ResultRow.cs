@@ -5,11 +5,11 @@ namespace RevitAccessibility.Revit;
 
 public sealed class ResultRow
 {
-    public ResultRow(Finding f, DoorDto? door)
+    public ResultRow(Finding f, string level, string mark)
     {
         Finding = f;
-        Level = door?.Level ?? "";
-        Mark = door?.Mark ?? "";
+        Level = level;
+        Mark = mark;
         Status = FindingCsvExporter.StatusText(f.Status);
         // Text + icon, never colour alone.
         StatusIcon = f.Status switch { FindingStatus.Pass => "✔", FindingStatus.Fail => "✖", _ => "?" };

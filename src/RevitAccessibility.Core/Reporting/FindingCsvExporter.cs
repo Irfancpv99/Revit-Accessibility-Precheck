@@ -11,17 +11,19 @@ public static class FindingCsvExporter
         ArgumentNullException.ThrowIfNull(findings);
         ArgumentNullException.ThrowIfNull(model);
 
-        var doors = model.Doors.ToDictionary(d => d.Uid, StringComparer.Ordinal);
+        var info = new Dictionary<string, (string Level, string Mark)>(StringComparer.Ordinal);
+        foreach (var d in model.Doors) info.TryAdd(d.Uid, (d.Level, d.Mark ?? ""));
+        foreach (var el in model.AllElements) info.TryAdd(el.Uid, (el.Level, el.Mark ?? ""));
         var sb = new StringBuilder();
         sb.Append(Cell(Disclaimer.Text)).Append("\r\n");
         sb.Append("Status,Severity,RuleId,Clause,Level,Mark,ElementUid,Message\r\n");
 
         foreach (var f in findings)
         {
-            doors.TryGetValue(f.ElementUid, out var door);
+            var (level, mark) = info.GetValueOrDefault(f.ElementUid);
             sb.Append(string.Join(",",
                 Cell(StatusText(f.Status)), Cell(f.Severity.ToString()), Cell(f.RuleId), Cell(f.ClauseRef),
-                Cell(door?.Level ?? ""), Cell(door?.Mark ?? ""), Cell(f.ElementUid), Cell(f.Message)));
+                Cell(level ?? ""), Cell(mark ?? ""), Cell(f.ElementUid), Cell(f.Message)));
             sb.Append("\r\n");
         }
         return sb.ToString();

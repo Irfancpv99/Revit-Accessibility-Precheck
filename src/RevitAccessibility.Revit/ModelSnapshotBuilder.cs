@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using RevitAccessibility.Core.Config;
 using RevitAccessibility.Core.Model;
+using RevitAccessibility.Core.Rules;
 
 namespace RevitAccessibility.Revit;
 
@@ -51,40 +52,89 @@ public sealed class ModelSnapshotBuilder
         return new BuildingModel(doors);
     }
 
+    // Register category text -> Revit category. Anything else is reported as "not run", never skipped silently.
+    private static readonly Dictionary<string, BuiltInCategory> SupportedCategories = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Doors"] = BuiltInCategory.OST_Doors,
+        ["Windows"] = BuiltInCategory.OST_Windows,
+        ["Walls"] = BuiltInCategory.OST_Walls,
+        ["Rooms"] = BuiltInCategory.OST_Rooms,
+        ["Floors"] = BuiltInCategory.OST_Floors,
+        ["Stairs"] = BuiltInCategory.OST_Stairs,
+        ["Ramps"] = BuiltInCategory.OST_Ramps,
+        ["Railings"] = BuiltInCategory.OST_StairsRailing,
+    };
+
+    /// <summary>
+    /// Doors plus the length parameters that register-driven rules need. Rules whose category is not supported
+    /// are added to <paramref name="notRun"/> so the window can say so.
+    /// </summary>
+    public BuildingModel Build(Document doc, IReadOnlyList<ParameterRuleSpec> specs, List<string> notRun)
+    {
+        var doorsModel = Build(doc);
+        var elements = new List<ElementDto>();
+
+        foreach (var group in specs.GroupBy(sp => sp.Category.Trim(), StringComparer.OrdinalIgnoreCase))
+        {
+            if (!SupportedCategories.TryGetValue(group.Key, out var bic))
+            {
+                foreach (var sp in group)
+                    notRun.Add($"{sp.RuleId}: category '{group.Key}' is not supported yet (supported: {string.Join(", ", SupportedCategories.Keys)}).");
+                continue;
+            }
+
+            var parameters = group.Select(sp => sp.Parameter).Distinct(StringComparer.Ordinal).ToList();
+            foreach (Element e in new FilteredElementCollector(doc).OfCategory(bic).WhereElementIsNotElementType())
+            {
+                var measurements = parameters.ToDictionary(n => n, n =>
+                {
+                    var r = ReadLengthMm(e, n);
+                    return new MeasurementDto(r.Value, r.Note);
+                });
+                elements.Add(new ElementDto(e.UniqueId, group.Key, LevelName(doc, e),
+                    e.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)?.AsString(), measurements));
+            }
+        }
+
+        if (elements.Count > 0)
+            AddinLog.Write($"  Register-driven rules: {specs.Count} rule(s), {elements.Count} element measurement set(s).");
+        return new BuildingModel(doorsModel.Doors, elements);
+    }
+
     private readonly record struct Read<T>(T? Value, string? Note) where T : struct;
 
-    private static string LevelName(Document doc, FamilyInstance door)
+    private static string LevelName(Document doc, Element element)
     {
-        var id = door.LevelId;
+        var id = element.LevelId;
         return id != ElementId.InvalidElementId && doc.GetElement(id) is Level l ? l.Name : "(no level)";
     }
 
     // Instance parameter first, then type parameter. Reports which of the two it used, or why neither worked.
-    private static (Parameter? Param, string? Note) Find(FamilyInstance door, string name)
+    private static (Parameter? Param, string? Note) Find(Element element, string name)
     {
-        var instance = door.LookupParameter(name);
+        var instance = element.LookupParameter(name);
         if (instance is not null && instance.HasValue) return (instance, null);
 
-        var typeParam = door.Document.GetElement(door.GetTypeId())?.LookupParameter(name);
+        var typeParam = element.Document.GetElement(element.GetTypeId())?.LookupParameter(name);
         if (typeParam is not null && typeParam.HasValue) return (typeParam, null);
 
         if (instance is null && typeParam is null)
-            return (null, $"Parameter '{name}' was not found on this door or its type (check config.json and the parameter name in Revit).");
-        return (null, $"Parameter '{name}' exists but has no value set on this door.");
+            return (null, $"Parameter '{name}' was not found on this element or its type (check config.json and the parameter name in Revit).");
+        return (null, $"Parameter '{name}' exists but has no value set on this element.");
     }
 
-    private static Read<double> ReadLengthMm(FamilyInstance door, string name)
+    private static Read<double> ReadLengthMm(Element element, string name)
     {
-        var (p, note) = Find(door, name);
+        var (p, note) = Find(element, name);
         if (p is null) return new(null, note);
         if (p.StorageType != StorageType.Double || p.Definition.GetDataType() != SpecTypeId.Length)
-            return new(null, $"Parameter '{name}' is not a Length parameter, so it cannot be read as a width.");
+            return new(null, $"Parameter '{name}' is not a Length parameter, so it cannot be read as a length.");
         return new(UnitUtils.ConvertFromInternalUnits(p.AsDouble(), UnitTypeId.Millimeters), null);
     }
 
-    private static Read<bool> ReadYesNo(FamilyInstance door, string name)
+    private static Read<bool> ReadYesNo(Element element, string name)
     {
-        var (p, note) = Find(door, name);
+        var (p, note) = Find(element, name);
         if (p is null)
             return new(null, note is not null && note.Contains("no value")
                 ? note + " Tick it (Yes) or tick and untick it (No) so a value is stored."

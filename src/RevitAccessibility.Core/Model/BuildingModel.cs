@@ -23,4 +23,21 @@ public sealed record DoorDto(
     string? AccessDoorNote = null,
     string? ClearWidthNote = null);
 
-public sealed record BuildingModel(IReadOnlyList<DoorDto> Doors);
+/// <summary>One measured value in millimetres, or null plus the reason it could not be read.</summary>
+public sealed record MeasurementDto(double? ValueMm, string? Note = null);
+
+/// <summary>
+/// A non-door element with the length parameters that register rules need, keyed by parameter name.
+/// Used by the generic <c>ParameterRule</c>.
+/// </summary>
+public sealed record ElementDto(
+    string Uid,
+    string Category,
+    string Level,
+    string? Mark,
+    IReadOnlyDictionary<string, MeasurementDto> Measurements);
+
+public sealed record BuildingModel(IReadOnlyList<DoorDto> Doors, IReadOnlyList<ElementDto>? Elements = null)
+{
+    public IReadOnlyList<ElementDto> AllElements => Elements ?? [];
+}

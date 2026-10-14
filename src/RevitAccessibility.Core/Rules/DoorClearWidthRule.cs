@@ -39,11 +39,11 @@ public sealed class DoorClearWidthRule : IRule
         double required = isAccess ? _thresholds.AccessDoorMinMm : _thresholds.OtherDoorMinMm;
         string kind = isAccess ? "access door" : "door";
 
-        return width.Value >= required
+        return MeasurementTolerance.AtLeast(width.Value, required)
             ? new Finding(Id, _thresholds.ClauseRef, Severity.Info, FindingStatus.Pass, door.Uid,
-                Label($"Clear width {width.Value:0} mm meets the minimum {required:0} mm for {kind}."))
+                Label($"Clear width {width.Value:0.##} mm meets the minimum {required:0.##} mm for {kind}."))
             : new Finding(Id, _thresholds.ClauseRef, Severity.Error, FindingStatus.Fail, door.Uid,
-                Label($"Clear width {width.Value:0} mm is below the minimum {required:0} mm for {kind} (level '{door.Level}')."));
+                Label($"Clear width {width.Value:0.##} mm is below the minimum {required:0.##} mm for {kind} (level '{door.Level}')."));
     }
 
     private Finding CannotEvaluate(DoorDto door, string message) =>

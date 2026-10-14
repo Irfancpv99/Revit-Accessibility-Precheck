@@ -19,7 +19,7 @@ public partial class ResultsWindow : Window
     private readonly bool _ready;
 
     public ResultsWindow(BuildingModel model, IReadOnlyList<Finding> findings, string? unverifiedNote,
-        string parameterInfo, SelectElementHandler handler, ExternalEvent externalEvent)
+        string parameterInfo, IReadOnlyList<string> notRun, SelectElementHandler handler, ExternalEvent externalEvent)
     {
         InitializeComponent();
         _model = model;
@@ -27,11 +27,22 @@ public partial class ResultsWindow : Window
         _handler = handler;
         _event = externalEvent;
 
-        var doors = model.Doors.ToDictionary(d => d.Uid, StringComparer.Ordinal);
-        _rows = findings.Select(f => new ResultRow(f, doors.GetValueOrDefault(f.ElementUid))).ToList();
+        var info = new Dictionary<string, (string Level, string Mark)>(StringComparer.Ordinal);
+        foreach (var d in model.Doors) info.TryAdd(d.Uid, (d.Level, d.Mark ?? ""));
+        foreach (var el in model.AllElements) info.TryAdd(el.Uid, (el.Level, el.Mark ?? ""));
+        _rows = findings.Select(f =>
+        {
+            var (level, mark) = info.GetValueOrDefault(f.ElementUid);
+            return new ResultRow(f, level ?? "", mark ?? "");
+        }).ToList();
 
         Footer.Text = Disclaimer.Text; // mandatory, always visible
         ParameterInfo.Text = parameterInfo;
+        if (notRun.Count > 0)
+        {
+            NotRunText.Text = "Rules not run: " + string.Join(" | ", notRun);
+            NotRunText.Visibility = Visibility.Visible;
+        }
         if (unverifiedNote is not null)
         {
             UnverifiedText.Text = unverifiedNote + " Do not rely on these results.";
@@ -67,7 +78,7 @@ public partial class ResultsWindow : Window
         int fail = _rows.Count(r => r.Finding.Status == FindingStatus.Fail);
         int cannot = _rows.Count(r => r.Finding.Status == FindingStatus.CannotEvaluate);
         int pass = _rows.Count(r => r.Finding.Status == FindingStatus.Pass);
-        SummaryText.Text = $"{_rows.Count} doors checked: ✖ {fail} Fail, ? {cannot} Cannot evaluate, ✔ {pass} Pass. Showing {shown.Count}.";
+        SummaryText.Text = $"{_rows.Count} checks: ✖ {fail} Fail, ? {cannot} Cannot evaluate, ✔ {pass} Pass. Showing {shown.Count}.";
     }
 
     private void OnFilterChanged(object sender, RoutedEventArgs e) => ApplyFilters();
