@@ -7,7 +7,7 @@ namespace RevitAccessibility.Core.Tests;
 
 public class DoorClearWidthRuleTests
 {
-    private static DoorClearWidthRule Rule() => new(new DoorClearWidthThresholds(800, 750, "DM 236/1989 p. 8.1.1 [test]"));
+    private static DoorClearWidthRule Rule() => new(new DoorClearWidthThresholds(800, 750, "DM 236/1989 p. 8.1.1 [test]"), WidthTrust.TrustSuppliedValue);
 
     private static BuildingModel One(double? width, bool? access) =>
         new([new DoorDto("u1", "L0", width, access)]);

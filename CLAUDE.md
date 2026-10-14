@@ -18,6 +18,8 @@ A pre-check tool that reads a Revit model, tests elements against accessibility 
   - Source: DM 236/1989 point 8.1.1, incorporated by DPR 503/1996. Article reference still to be confirmed. Status: Needs review.
 - **Access door classification:** a shared parameter "Access door" (Yes/No) on door families. An unset value is NOT "No". Unset doors produce Cannot evaluate.
 - **Units:** the register stores values in cm. Code uses millimetres. The loader must convert (80 cm -> 800 mm). Never mix units silently.
+- **Nominal width is not clear width:** a door's nominal `Width` is never judged as the legal clear opening. The door rule gives Pass/Fail only when the width's meaning is declared `ClearOpening` in config; otherwise the result is Needs review. Default is `NominalProxy`. (Added 2026-10-14 with owner approval.)
+- **Result statuses:** Pass, Fail, Cannot evaluate, Needs review. Needs review is never a pass. A geometric clash is never a legal Fail. Geometry in Core is millimetres in host coordinates; cross-document geometry must go through `RigidTransform`/`LinkResolver`. See `docs/06-geometric-checks.md` and `docs/07-federated-models.md`.
 
 ## 3. Hard rules
 
@@ -47,6 +49,8 @@ revit-accessibility-precheck/
       Model/                         DoorDto, BuildingModel, Finding, Severity, FindingStatus
       Rules/                         IRule, DoorClearWidthRule, DoorClearWidthThresholds
       Engine/                        RuleEngine
+      Geometry/                      Aabb, RigidTransform, LinkResolver
+      Register/ Config/ Reporting/   register loader, config parser, CSV exporter
     RevitAccessibility.Core.Tests/   tests (see section 6)
     RevitAccessibility.Revit/        net10.0-windows, Revit 2026 add-in (built; first-run testing)
   scripts/deploy.ps1                 builds and copies the add-in to the Revit add-in folder

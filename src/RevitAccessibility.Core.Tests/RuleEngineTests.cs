@@ -7,7 +7,7 @@ namespace RevitAccessibility.Core.Tests;
 
 public class RuleEngineTests
 {
-    private static DoorClearWidthRule Rule() => new(new DoorClearWidthThresholds(800, 750, "DM 236/1989 p. 8.1.1 [test]"));
+    private static DoorClearWidthRule Rule() => new(new DoorClearWidthThresholds(800, 750, "DM 236/1989 p. 8.1.1 [test]"), WidthTrust.TrustSuppliedValue);
 
     [Fact]
     public void Engine_orders_Fail_before_CannotEvaluate_before_Pass()

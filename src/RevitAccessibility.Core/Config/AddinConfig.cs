@@ -1,4 +1,5 @@
 using System.Text.Json;
+using RevitAccessibility.Core.Model;
 
 namespace RevitAccessibility.Core.Config;
 
@@ -16,6 +17,13 @@ public sealed class AddinConfig
 
     public string ClearWidthParameter { get; private set; } = DefaultClearWidthParameter;
     public string AccessDoorParameter { get; private set; } = DefaultAccessDoorParameter;
+
+    /// <summary>
+    /// What the clear-width parameter really holds. Default NominalProxy: a door's nominal Width is not the legal
+    /// clear opening, so its results are "Needs review". Set to "ClearOpening" in config.json ONLY for a parameter
+    /// that really contains the clear opening (luce netta).
+    /// </summary>
+    public MeasurementMeaning ClearWidthMeaning { get; private set; } = MeasurementMeaning.NominalProxy;
 
     /// <summary>Where the values came from, for the log and the results window.</summary>
     public string Source { get; private set; } = "built-in defaults";
@@ -72,9 +80,19 @@ public sealed class AddinConfig
                     cfg.ClearWidthParameter = ReadName(prop, sourceName);
                 else if (string.Equals(prop.Name, "AccessDoorParameter", StringComparison.OrdinalIgnoreCase))
                     cfg.AccessDoorParameter = ReadName(prop, sourceName);
+                else if (string.Equals(prop.Name, "ClearWidthMeaning", StringComparison.OrdinalIgnoreCase))
+                    cfg.ClearWidthMeaning = ReadMeaning(prop, sourceName);
             }
             return cfg;
         }
+    }
+
+    private static MeasurementMeaning ReadMeaning(JsonProperty prop, string sourceName)
+    {
+        var text = prop.Value.ValueKind == JsonValueKind.String ? prop.Value.GetString() : null;
+        if (text is not null && Enum.TryParse<MeasurementMeaning>(text.Trim(), ignoreCase: true, out var m) && Enum.IsDefined(m) && m != MeasurementMeaning.Unknown)
+            return m;
+        throw new InvalidDataException($"{sourceName}: '{prop.Name}' must be \"ClearOpening\" or \"NominalProxy\".");
     }
 
     private static string ReadName(JsonProperty prop, string sourceName)

@@ -14,6 +14,8 @@ namespace RevitAccessibility.Core.Model;
 /// <param name="Mark">Door Mark for reporting only; may be null.</param>
 /// <param name="AccessDoorNote">Why <paramref name="IsAccessDoor"/> is null (for example parameter not found). Reporting only.</param>
 /// <param name="ClearWidthNote">Why <paramref name="ClearWidthMm"/> is null (for example parameter not found). Reporting only.</param>
+/// <param name="ClearWidthSource">Which parameter the width came from and what it means. Null = not declared.</param>
+/// <param name="DocumentId">Id of the document the door belongs to (see <c>DocumentDto</c>); null for a single-model run.</param>
 public sealed record DoorDto(
     string Uid,
     string Level,
@@ -21,7 +23,9 @@ public sealed record DoorDto(
     bool? IsAccessDoor,
     string? Mark = null,
     string? AccessDoorNote = null,
-    string? ClearWidthNote = null);
+    string? ClearWidthNote = null,
+    MeasurementInfo? ClearWidthSource = null,
+    string? DocumentId = null);
 
 /// <summary>One measured value in millimetres, or null plus the reason it could not be read.</summary>
 public sealed record MeasurementDto(double? ValueMm, string? Note = null);
@@ -35,9 +39,45 @@ public sealed record ElementDto(
     string Category,
     string Level,
     string? Mark,
-    IReadOnlyDictionary<string, MeasurementDto> Measurements);
+    IReadOnlyDictionary<string, MeasurementDto> Measurements,
+    string? DocumentId = null);
 
-public sealed record BuildingModel(IReadOnlyList<DoorDto> Doors, IReadOnlyList<ElementDto>? Elements = null)
+public enum GeometryStatus { Available, Missing, Invalid, Unsupported }
+
+/// <summary>
+/// An element's geometry summary for coordination checks. <paramref name="BoxMm"/> is already in HOST
+/// coordinates (the Revit side transforms linked elements with <c>RigidTransform</c>); it is null when
+/// <paramref name="Status"/> is not Available. Missing geometry is never treated as "no clash".
+/// </summary>
+/// <param name="Uid">UniqueId of the element inside its own document.</param>
+/// <param name="DocumentId">Which document the element lives in. The pair (DocumentId, Uid) is the element's identity.</param>
+/// <param name="HostUid">UniqueId of the element this one is hosted in (for example the wall of a door), if any. Used to exclude intentional connections.</param>
+public sealed record GeoElementDto(
+    string Uid,
+    string DocumentId,
+    string Category,
+    string Level,
+    string? Mark,
+    Geometry.Aabb? BoxMm,
+    GeometryStatus Status,
+    string? GeometryNote = null,
+    string? HostUid = null)
+{
+    public string Key => DocumentId + ":" + Uid;
+}
+
+/// <summary>Result of an exact geometric test for one candidate pair, performed on the Revit side.</summary>
+public enum PairConfirmation { NotAttempted, Intersects, NoIntersection, Failed }
+
+public sealed record PairConfirmationDto(string KeyA, string KeyB, PairConfirmation Result, double? OverlapVolumeMm3 = null, string? Note = null);
+
+public sealed record BuildingModel(
+    IReadOnlyList<DoorDto> Doors,
+    IReadOnlyList<ElementDto>? Elements = null,
+    IReadOnlyList<GeoElementDto>? GeoElements = null,
+    IReadOnlyList<PairConfirmationDto>? Confirmations = null)
 {
     public IReadOnlyList<ElementDto> AllElements => Elements ?? [];
+    public IReadOnlyList<GeoElementDto> AllGeoElements => GeoElements ?? [];
+    public IReadOnlyList<PairConfirmationDto> AllConfirmations => Confirmations ?? [];
 }

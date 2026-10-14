@@ -169,7 +169,7 @@ public class ParameterRuleFactoryTests
 public class DoorToleranceTests
 {
     private static FindingStatus Status(double width, bool access) =>
-        Assert.Single(new DoorClearWidthRule(new DoorClearWidthThresholds(800, 750, "c"))
+        Assert.Single(new DoorClearWidthRule(new DoorClearWidthThresholds(800, 750, "c"), WidthTrust.TrustSuppliedValue)
             .Evaluate(new BuildingModel([new DoorDto("u", "L0", width, access)]))).Status;
 
     [Fact] public void Float_noise_just_below_800_passes_as_access_door() => Assert.Equal(FindingStatus.Pass, Status(799.9999999, true));

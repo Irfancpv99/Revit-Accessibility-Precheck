@@ -13,14 +13,23 @@ public sealed class RuleEngine
         _rules = rules.ToList();
     }
 
+    // Fail first, then what needs a person, then what could not be evaluated, then passes.
+    private static int Rank(FindingStatus s) => s switch
+    {
+        FindingStatus.Fail => 0,
+        FindingStatus.NeedsReview => 1,
+        FindingStatus.CannotEvaluate => 2,
+        FindingStatus.Pass => 3,
+        _ => 4,
+    };
+
     public IReadOnlyList<Finding> Run(BuildingModel model)
     {
         ArgumentNullException.ThrowIfNull(model);
 
         return _rules
             .SelectMany(r => r.Evaluate(model))
-            .OrderByDescending(f => f.Status == FindingStatus.Fail)
-            .ThenByDescending(f => f.Status == FindingStatus.CannotEvaluate)
+            .OrderBy(f => Rank(f.Status))
             .ThenBy(f => f.RuleId, StringComparer.Ordinal)
             .ThenBy(f => f.ElementUid, StringComparer.Ordinal)
             .ToList();

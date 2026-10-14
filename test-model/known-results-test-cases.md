@@ -20,6 +20,23 @@ result is labelled UNVERIFIED): **access door 800 mm, other door 750 mm.**
 tick and then untick it, so that a value is stored. A door that was never touched is "unset" and
 reports Cannot evaluate, by design.
 
+## Declared meaning of the width (important)
+
+A door type's `Width` is a **nominal** width. It is not the legal clear opening (luce netta). The
+core rule therefore only gives Pass or Fail when the width's meaning has been declared to be the
+clear opening, with `"ClearWidthMeaning": "ClearOpening"` in `config.json`. The default is
+`"NominalProxy"`, and then every door with a width reports **Needs review**, never Pass or Fail.
+
+* With the default config, expect **Needs review** on every door in the table below that has a
+  Yes or No stored.
+* To exercise the thresholds in a test, set `ClearWidthMeaning` to `ClearOpening` for the test only
+  and treat the results as test results. Do not use that setting with a nominal parameter on a real
+  project.
+* **The add-in does not pass this declared meaning to the rule yet** (planned, see
+  `docs/07-federated-models.md`, "What still has to be built"). Until it does, every door with a width
+  is reported as Needs review. The Pass/Fail rows below describe the behaviour once that is built and
+  are verified only by the automated Core tests, not yet in Revit.
+
 ## Cases
 
 | Test door | Width type (mm) | Access door | Expected status | Why |
