@@ -14,4 +14,3 @@ RevitAPIUI.dll
 
 # Local machine paths (copy the .example file)
 *.local.props
-*.dll

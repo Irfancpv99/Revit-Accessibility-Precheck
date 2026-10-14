@@ -12,6 +12,15 @@ namespace RevitAccessibility.Core.Model;
 /// Null: not classified; the result is "Cannot evaluate".
 /// </param>
 /// <param name="Mark">Door Mark for reporting only; may be null.</param>
-public sealed record DoorDto(string Uid, string Level, double? ClearWidthMm, bool? IsAccessDoor, string? Mark = null);
+/// <param name="AccessDoorNote">Why <paramref name="IsAccessDoor"/> is null (for example parameter not found). Reporting only.</param>
+/// <param name="ClearWidthNote">Why <paramref name="ClearWidthMm"/> is null (for example parameter not found). Reporting only.</param>
+public sealed record DoorDto(
+    string Uid,
+    string Level,
+    double? ClearWidthMm,
+    bool? IsAccessDoor,
+    string? Mark = null,
+    string? AccessDoorNote = null,
+    string? ClearWidthNote = null);
 
 public sealed record BuildingModel(IReadOnlyList<DoorDto> Doors);

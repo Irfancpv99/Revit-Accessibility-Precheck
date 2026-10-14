@@ -13,8 +13,8 @@ reviewed by a qualified professional before it is relied on.
 | Project plan and guides | Complete (this folder) |
 | Rule register (thresholds) | **Placeholders only.** No value is verified yet. |
 | Architect workflow (Dynamo + Excel) | Documented; graph not yet built |
-| Core rule engine (C#) | Implemented with door clear-width rule; 20 tests pass (see `src/`) |
-| Revit add-in (C#) | Planned; not yet implemented |
+| Core rule engine (C#) | Implemented with door clear-width rule, register loader, CSV export and config parsing; xUnit tests in `src/RevitAccessibility.Core.Tests` |
+| Revit add-in (C#) | Built for Revit 2026.5 (.NET 10); in first-run testing, not yet verified in a real model (see `test-model/`) |
 
 ## Who this is for
 

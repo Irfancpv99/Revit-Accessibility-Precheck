@@ -26,11 +26,11 @@ public sealed class DoorClearWidthRule : IRule
     private Finding EvaluateDoor(DoorDto door)
     {
         if (door.IsAccessDoor is null)
-            return CannotEvaluate(door, $"Door on level '{door.Level}' is not classified as access or other door.");
+            return CannotEvaluate(door, $"Door on level '{door.Level}' is not classified as access or other door.{WithNote(door.AccessDoorNote)}");
 
         var width = door.ClearWidthMm;
         if (width is null)
-            return CannotEvaluate(door, $"Door on level '{door.Level}' has no clear-width value.");
+            return CannotEvaluate(door, $"Door on level '{door.Level}' has no clear-width value.{WithNote(door.ClearWidthNote)}");
 
         if (!double.IsFinite(width.Value) || width.Value <= 0)
             return CannotEvaluate(door, $"Door on level '{door.Level}' has an invalid clear width ({width.Value}).");
@@ -48,6 +48,8 @@ public sealed class DoorClearWidthRule : IRule
 
     private Finding CannotEvaluate(DoorDto door, string message) =>
         new(Id, _thresholds.ClauseRef, Severity.Info, FindingStatus.CannotEvaluate, door.Uid, Label(message));
+
+    private static string WithNote(string? note) => string.IsNullOrWhiteSpace(note) ? "" : " " + note.Trim();
 
     private string Label(string message) =>
         _thresholds.UnverifiedNote is null ? message : $"{message} [{_thresholds.UnverifiedNote}]";

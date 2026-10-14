@@ -73,4 +73,30 @@ public class DoorClearWidthRuleTests
     // Thresholds must be valid
     [Fact] public void Zero_threshold_is_rejected() => Assert.Throws<ArgumentOutOfRangeException>(() => new DoorClearWidthThresholds(0, 750, "x"));
     [Fact] public void Blank_clause_reference_is_rejected() => Assert.Throws<ArgumentException>(() => new DoorClearWidthThresholds(800, 750, " "));
+
+    // Reasons for missing data are shown to the user.
+    [Fact]
+    public void Access_door_note_is_included_when_door_is_unclassified()
+    {
+        var model = new BuildingModel([new DoorDto("u1", "L0", 900, null, "D1", AccessDoorNote: "Parameter 'Access door' has no value set.")]);
+        var f = Assert.Single(Rule().Evaluate(model));
+        Assert.Equal(FindingStatus.CannotEvaluate, f.Status);
+        Assert.Contains("Parameter 'Access door' has no value set.", f.Message);
+    }
+
+    [Fact]
+    public void Clear_width_note_is_included_when_width_is_missing()
+    {
+        var model = new BuildingModel([new DoorDto("u1", "L0", null, true, "D1", ClearWidthNote: "Parameter 'Width' not found.")]);
+        var f = Assert.Single(Rule().Evaluate(model));
+        Assert.Equal(FindingStatus.CannotEvaluate, f.Status);
+        Assert.Contains("Parameter 'Width' not found.", f.Message);
+    }
+
+    [Fact]
+    public void Notes_never_turn_a_missing_value_into_a_pass()
+    {
+        var model = new BuildingModel([new DoorDto("u1", "L0", null, null, null, "a", "b")]);
+        Assert.Equal(FindingStatus.CannotEvaluate, Assert.Single(Rule().Evaluate(model)).Status);
+    }
 }

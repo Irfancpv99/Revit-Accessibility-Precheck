@@ -19,7 +19,7 @@ public partial class ResultsWindow : Window
     private readonly bool _ready;
 
     public ResultsWindow(BuildingModel model, IReadOnlyList<Finding> findings, string? unverifiedNote,
-        SelectElementHandler handler, ExternalEvent externalEvent)
+        string parameterInfo, SelectElementHandler handler, ExternalEvent externalEvent)
     {
         InitializeComponent();
         _model = model;
@@ -31,6 +31,7 @@ public partial class ResultsWindow : Window
         _rows = findings.Select(f => new ResultRow(f, doors.GetValueOrDefault(f.ElementUid))).ToList();
 
         Footer.Text = Disclaimer.Text; // mandatory, always visible
+        ParameterInfo.Text = parameterInfo;
         if (unverifiedNote is not null)
         {
             UnverifiedText.Text = unverifiedNote + " Do not rely on these results.";

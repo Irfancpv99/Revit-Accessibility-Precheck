@@ -48,8 +48,8 @@ revit-accessibility-precheck/
       Rules/                         IRule, DoorClearWidthRule, DoorClearWidthThresholds
       Engine/                        RuleEngine
     RevitAccessibility.Core.Tests/   tests (see section 6)
-    RevitAccessibility.Revit/        net8.0-windows, Revit 2026 add-in (TO BUILD)
-  scripts/deploy.ps1                 copies build output to Revit add-in folder (TO BUILD)
+    RevitAccessibility.Revit/        net10.0-windows, Revit 2026 add-in (built; first-run testing)
+  scripts/deploy.ps1                 builds and copies the add-in to the Revit add-in folder
 ```
 
 ## 5. Build and test commands

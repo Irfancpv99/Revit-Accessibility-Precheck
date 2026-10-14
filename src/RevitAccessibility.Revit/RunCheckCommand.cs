@@ -1,6 +1,7 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using RevitAccessibility.Core.Config;
 using RevitAccessibility.Core.Engine;
 using RevitAccessibility.Core.Register;
 using RevitAccessibility.Core.Rules;
@@ -35,8 +36,11 @@ public sealed class RunCheckCommand : IExternalCommand
             var handler = new SelectElementHandler();
             var externalEvent = ExternalEvent.Create(handler);
 
+            string parameterInfo = $"Parameters read: clear width = '{config.ClearWidthParameter}', access door = '{config.AccessDoorParameter}' (config: {config.Source})";
+
             _window?.Close();
-            _window = new ResultsWindow(model, findings, thresholds.UnverifiedNote, handler, externalEvent);
+            _window = new ResultsWindow(model, findings, thresholds.UnverifiedNote, parameterInfo, handler, externalEvent);
+            new System.Windows.Interop.WindowInteropHelper(_window) { Owner = commandData.Application.MainWindowHandle };
             _window.Show(); // modeless
             return Result.Succeeded;
         }
@@ -44,7 +48,7 @@ public sealed class RunCheckCommand : IExternalCommand
         {
             AddinLog.Write(ex.ToString());
             message = ex.Message;
-            TaskDialog.Show("Accessibility Pre-Check", $"The check failed: {ex.Message}\n\nDetails: {AddinLog.Path_}");
+            TaskDialog.Show("Accessibility Pre-Check", $"The check failed: {ex.Message}\n\nDetails: {AddinLog.FilePath}");
             return Result.Failed;
         }
     }

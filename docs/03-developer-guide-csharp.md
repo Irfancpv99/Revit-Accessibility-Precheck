@@ -134,8 +134,8 @@ Required cases for every rule:
 [Fact]
 public void Missing_width_is_cannot_evaluate_not_pass()
 {
-    var rule = new DoorClearWidthRule(800, "TEST");
-    var f = Assert.Single(rule.Evaluate(new BuildingModel([new DoorDto("u1", "L0", null)])));
+    var rule = new DoorClearWidthRule(new DoorClearWidthThresholds(800, 750, "TEST"));
+    var f = Assert.Single(rule.Evaluate(new BuildingModel([new DoorDto("u1", "L0", null, true)])));
     Assert.Equal(FindingStatus.CannotEvaluate, f.Status);
 }
 ```
