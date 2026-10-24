@@ -50,6 +50,7 @@ revit-accessibility-precheck/
       Rules/                         IRule, DoorClearWidthRule, DoorClearWidthThresholds
       Engine/                        RuleEngine
       Geometry/                      Aabb, RigidTransform, LinkResolver
+      RuleDefinitions/               rule definition schema, validator, capabilities allowlist, builder
       Register/ Config/ Reporting/   register loader, config parser, CSV exporter
     RevitAccessibility.Core.Tests/   tests (see section 6)
     RevitAccessibility.Revit/        net10.0-windows, Revit 2026 add-in (built; first-run testing)

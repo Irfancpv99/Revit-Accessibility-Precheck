@@ -13,7 +13,8 @@ reviewed by a qualified professional before it is relied on.
 | Project plan and guides | Complete (this folder) |
 | Rule register (thresholds) | **Placeholders only.** No value is verified yet. |
 | Architect workflow (Dynamo + Excel) | Documented; graph not yet built |
-| Core rule engine (C#) | Door clear-width rule (version 2: a nominal width is never judged as a legal clear opening), register loader, register-driven length rule, potential-clash rule, link/transform geometry, CSV export with provenance, config parsing. 215 xUnit tests in `src/RevitAccessibility.Core.Tests`. |
+| Core rule engine (C#) | Door clear-width rule (version 2: a nominal width is never judged as a legal clear opening), register loader, register-driven length rule, potential-clash rule, link/transform geometry, CSV export with provenance, config parsing. tests in `src/RevitAccessibility.Core.Tests`. |
+| Rule definitions (schema v1) | Versioned definition, validator (schema / execution / governance kept separate), allowlist of supported methods, strict JSON loader, adapter for the CSV register, builder that reports every rule it does not run. 282 xUnit tests in total. **Not yet used by the add-in.** See `docs/09-rule-definition-schema.md`. |
 | Revit add-in (C#) | Built for Revit 2026.5 (.NET 10). Door check and results window run in Revit. **Not yet adapted to the new Core:** it does not pass the declared width meaning, read geometry, or show the Needs review status icon (Phase 2). |
 | Linked / federated models | Core logic prepared and tested. Not implemented in the add-in. The three supplied files have not been inspected. See `docs/07-federated-models.md`. |
 | Geometric checks | Potential-clash broad phase in Core only. No exact intersection yet. See `docs/06-geometric-checks.md`. |
