@@ -105,3 +105,30 @@ public sealed class RuleLibraryTests : IDisposable
         Assert.Null(RuleLibrary.UnverifiedBanner(RuleLibrary.Load(_csv, null)));
     }
 }
+
+public class ShippedExampleRuleTests
+{
+    [Fact] public void Test_only_wall_rule_file_loads_validates_and_runs_as_documented()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "test-model", "user-rule-wall-width.TEST-ONLY.json"))) dir = dir.Parent;
+        var def = Assert.Single(RuleDefinitionJson.Parse(File.ReadAllText(Path.Combine(dir!.FullName, "test-model", "user-rule-wall-width.TEST-ONLY.json"))));
+
+        var report = RuleValidator.Validate(def);
+        Assert.True(report.IsExecutable);
+        Assert.Contains(report.GovernanceWarnings, w => w.Code == "GOV-UNVERIFIED");
+
+        var set = RuleSetBuilder.Build([def]);
+        var f = new RevitAccessibility.Core.Engine.RuleEngine(set.Rules).Run(new BuildingModel([],
+            [Element("w200", 200), Element("w250", 250), Element("w300", 300), Element("none", null)]));
+        var byUid = f.ToDictionary(x => x.ElementUid);
+        Assert.Equal(FindingStatus.Fail, byUid["w200"].Status);
+        Assert.Equal(FindingStatus.Pass, byUid["w250"].Status);
+        Assert.Equal(FindingStatus.Pass, byUid["w300"].Status);
+        Assert.Equal(FindingStatus.CannotEvaluate, byUid["none"].Status);
+        Assert.All(f, x => Assert.Contains("UNVERIFIED", x.Message));
+    }
+
+    private static ElementDto Element(string uid, double? width) =>
+        new(uid, "Walls", "L1", uid, new Dictionary<string, MeasurementDto> { ["Width"] = new(width) });
+}
