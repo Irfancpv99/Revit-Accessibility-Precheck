@@ -1,6 +1,6 @@
 # Rule definitions, validation and execution readiness (schema version 1)
 
-Status: implemented in Core and unit-tested. **Not yet used by the Revit add-in** (the add-in still builds its rules directly from the CSV register; wiring is the next step). No Rule Builder UI exists yet.
+Status: implemented in Core and unit-tested. The Revit add-in's `RunCheckCommand` now builds its rules through `RuleLibrary` (**written without a Revit build; not yet built or run in Revit**). No Rule Builder UI exists yet: architects currently write the JSON files by hand.
 
 ## What it adds
 
@@ -13,6 +13,7 @@ Status: implemented in Core and unit-tested. **Not yet used by the Revit add-in*
 | `RuleValidator.cs` | Produces a report with three separate lists: **Schema** errors, **Execution** errors, **Governance** warnings. `IsSchemaValid` and `IsExecutable` are separate; neither says anything about legal approval. |
 | `RuleDefinitionJson.cs` | Strict JSON reader/writer (camelCase). Unknown fields, numeric enum values and malformed files are rejected. |
 | `LegacyRegisterAdapter.cs` | Expresses `rules/rule-register.csv` rows as definitions. The CSV stays the single source of truth; nothing is copied or invented. Rows the loader rejected (for example `[TBD]` thresholds) are returned as "not run" with the reason. |
+| `RuleLibrary.cs` | Loads the shipped register plus the architect's `*.json` files in `%APPDATA%\RevitAccessibility\rules\`; the register loads first so a user file can never replace a shipped rule with the same id. Unreadable or malformed files are reported as not run. Also builds the UNVERIFIED banner text. |
 | `RuleSetBuilder.cs` | Validates definitions and builds runnable rules. Anything not schema-valid and executable is listed in `NotRun` with the validator's reasons, never dropped. |
 
 ## The three kinds of problem
@@ -33,7 +34,8 @@ Three independent things: `lifecycle.status` (Draft, TechnicallyValidated, Legal
 
 ## Known limits
 
-- The add-in does not use definitions yet; `RuleCapabilities.SupportedCategories` duplicates the category list in `ModelSnapshotBuilder` and must be kept in sync until the add-in is wired.
+- `RuleCapabilities.SupportedCategories` duplicates the category list in `ModelSnapshotBuilder` and must be kept in sync.
+- A user door rule pairs with the shipped door rules; adding a differently named door rule makes the door rules "not run" (reported, with the reason).
 - The CSV does not hold applicability, so legacy-adapted rules always carry a `GOV-APPLICABILITY` warning. This is deliberate.
 - The "rules not run" list is shown in the results window but is not yet written into the CSV export.
 - Calculation, geometry, parameter-presence and manual-review rule types are defined in the schema but not implemented.

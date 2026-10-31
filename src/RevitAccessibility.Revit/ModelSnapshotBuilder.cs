@@ -45,7 +45,12 @@ public sealed class ModelSnapshotBuilder
                 IsAccessDoor: access.Value,
                 Mark: door.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)?.AsString(),
                 AccessDoorNote: access.Note,
-                ClearWidthNote: width.Note));
+                ClearWidthNote: width.Note,
+                // What the configured parameter means is declared by the owner in config.json; default NominalProxy.
+                ClearWidthSource: width.Value is null || width.Origin is null ? null
+                    : new MeasurementInfo(_config.ClearWidthParameter, width.Origin,
+                        "Revit length parameter converted to mm once", _config.ClearWidthMeaning),
+                DocumentId: doc.Title));
         }
 
         LogSummary(doors);
@@ -101,7 +106,7 @@ public sealed class ModelSnapshotBuilder
         return new BuildingModel(doorsModel.Doors, elements);
     }
 
-    private readonly record struct Read<T>(T? Value, string? Note) where T : struct;
+    private readonly record struct Read<T>(T? Value, string? Note, string? Origin = null) where T : struct;
 
     private static string LevelName(Document doc, Element element)
     {
@@ -129,7 +134,8 @@ public sealed class ModelSnapshotBuilder
         if (p is null) return new(null, note);
         if (p.StorageType != StorageType.Double || p.Definition.GetDataType() != SpecTypeId.Length)
             return new(null, $"Parameter '{name}' is not a Length parameter, so it cannot be read as a length.");
-        return new(UnitUtils.ConvertFromInternalUnits(p.AsDouble(), UnitTypeId.Millimeters), null);
+        var origin = p.Element is not null && p.Element.Id == element.Id ? "instance" : "type";
+        return new(UnitUtils.ConvertFromInternalUnits(p.AsDouble(), UnitTypeId.Millimeters), null, origin);
     }
 
     private static Read<bool> ReadYesNo(Element element, string name)

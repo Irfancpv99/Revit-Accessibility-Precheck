@@ -51,7 +51,7 @@ public partial class ResultsWindow : Window
 
         LevelFilter.ItemsSource = new[] { AllLabel }.Concat(_rows.Select(r => r.Level).Distinct().OrderBy(x => x)).ToList();
         LevelFilter.SelectedIndex = 0;
-        StatusFilter.ItemsSource = new[] { AllLabel, "Fail", "Cannot evaluate", "Pass" };
+        StatusFilter.ItemsSource = new[] { AllLabel, "Fail", "Needs review", "Cannot evaluate", "Pass" };
         StatusFilter.SelectedIndex = 0;
 
         _ready = true;
@@ -76,9 +76,10 @@ public partial class ResultsWindow : Window
 
         Grid.ItemsSource = shown;
         int fail = _rows.Count(r => r.Finding.Status == FindingStatus.Fail);
+        int review = _rows.Count(r => r.Finding.Status == FindingStatus.NeedsReview);
         int cannot = _rows.Count(r => r.Finding.Status == FindingStatus.CannotEvaluate);
         int pass = _rows.Count(r => r.Finding.Status == FindingStatus.Pass);
-        SummaryText.Text = $"{_rows.Count} checks: ✖ {fail} Fail, ? {cannot} Cannot evaluate, ✔ {pass} Pass. Showing {shown.Count}.";
+        SummaryText.Text = $"{_rows.Count} checks: ✖ {fail} Fail, ! {review} Needs review, ? {cannot} Cannot evaluate, ✔ {pass} Pass. Showing {shown.Count}.";
     }
 
     private void OnFilterChanged(object sender, RoutedEventArgs e) => ApplyFilters();
