@@ -3,7 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using RevitAccessibility.Core.Config;
 using RevitAccessibility.Core.Engine;
-using RevitAccessibility.Core.Register;
+using RevitAccessibility.Core.RuleDefinitions;
 using RevitAccessibility.Core.Rules;
 
 namespace RevitAccessibility.Revit;
@@ -26,17 +26,17 @@ public sealed class RunCheckCommand : IExternalCommand
 
             var config = AddinConfig.Load();
             var assemblyDir = Path.GetDirectoryName(typeof(RunCheckCommand).Assembly.Location)!;
-            var register = RuleRegisterLoader.LoadFile(Path.Combine(assemblyDir, "rule-register.csv"));
-            var thresholds = DoorClearWidthThresholds.FromRegister(register);
 
-            var ruleSet = ParameterRuleFactory.FromRegister(register,
-                [DoorClearWidthThresholds.EntryRuleId, DoorClearWidthThresholds.OtherRuleId]);
-            var notRun = new List<string>(ruleSet.NotRun);
+            // Shipped register plus the architect's own rule files (%APPDATA%\RevitAccessibility\rules\*.json).
+            // Every rule that cannot run is returned with its reason; none is dropped.
+            var userRules = Path.Combine(AddinConfig.AppDataDir, "rules");
+            var library = RuleLibrary.Load(Path.Combine(assemblyDir, "rule-register.csv"), userRules);
+            var notRun = library.NotRun.Select(n => n.ToString()).ToList();
 
-            var model = new ModelSnapshotBuilder(config).Build(uiDoc.Document, ruleSet.Rules.Select(r => r.Spec).ToList(), notRun);
-            var rules = new List<IRule> { new DoorClearWidthRule(thresholds) };
-            rules.AddRange(ruleSet.Rules);
-            var findings = new RuleEngine(rules).Run(model);
+            var specs = library.Rules.OfType<ParameterRule>().Select(r => r.Spec).ToList();
+            var model = new ModelSnapshotBuilder(config).Build(uiDoc.Document, specs, notRun);
+            var findings = new RuleEngine(library.Rules).Run(model);
+            AddinLog.Write($"Rules: {library.Rules.Count} executable, {notRun.Count} not run. User rules folder: {userRules}");
             foreach (var n in notRun) AddinLog.Write("  Rule not run: " + n);
 
             // ExternalEvent must be created here, inside a valid Revit API context.
@@ -46,7 +46,7 @@ public sealed class RunCheckCommand : IExternalCommand
             string parameterInfo = $"Parameters read: clear width = '{config.ClearWidthParameter}', access door = '{config.AccessDoorParameter}' (config: {config.Source})";
 
             _window?.Close();
-            _window = new ResultsWindow(model, findings, thresholds.UnverifiedNote, parameterInfo, notRun, handler, externalEvent);
+            _window = new ResultsWindow(model, findings, RuleLibrary.UnverifiedBanner(library), parameterInfo, notRun, handler, externalEvent);
             new System.Windows.Interop.WindowInteropHelper(_window) { Owner = commandData.Application.MainWindowHandle };
             _window.Show(); // modeless
             return Result.Succeeded;

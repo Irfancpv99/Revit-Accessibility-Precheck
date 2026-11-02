@@ -1,0 +1,25 @@
+{
+  "rules": [
+    {
+      "schemaVersion": 1,
+      "ruleId": "TEST-WALL-WIDTH",
+      "ruleVersion": 1,
+      "name": "TEST ONLY: wall width at least 250 mm (arbitrary value, no legal meaning)",
+      "domain": "Architectural",
+      "ruleType": "Dimension",
+      "sourceType": "TestOnly",
+      "elementCategories": [ "Walls" ],
+      "applicability": {
+        "jurisdiction": "TEST",
+        "buildingType": "Test model",
+        "assumptions": [ "Synthetic rule to exercise the add-in. Not a requirement of any regulation." ]
+      },
+      "measurement": { "id": "wall-width", "method": "length-parameter", "parameter": "Width", "unit": "mm" },
+      "evaluation": { "operator": ">=", "threshold": 250, "thresholdUnit": "mm" },
+      "source": { "document": "Manual Revit test, test-model/user-rule-wall-width.TEST-ONLY.json" },
+      "verification": { "status": "Unverified", "notes": "Test only." },
+      "lifecycle": { "status": "Draft", "testCaseRefs": [ "docs/08-revit-manual-test-procedure.md section D" ] },
+      "severity": "Error"
+    }
+  ]
+}

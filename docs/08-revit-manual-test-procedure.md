@@ -33,11 +33,12 @@ modified afterwards.
 | B2 | Rename the clear-width parameter in config to one that does not exist | Each door says `Parameter '<name>' was not found ...` (Cannot evaluate), and the log lists the parameters Revit exposes. |
 | B3 | Break the JSON on purpose | The command fails with a message naming the config file; nothing silently falls back. |
 
-## C. Door check (needs the Phase 2 add-in to pass the declared meaning)
+## C. Door check
 
-> **Not yet possible.** The Core rule now needs a declared measurement meaning. The Revit add-in does
-> not pass it yet (Phase 2). Until then every door is reported as **Needs review** ("undeclared
-> source"), which is the safe behaviour. Rows C2 onwards describe the behaviour once Phase 2 exists.
+> The add-in now passes the declared width meaning from `config.json` (`ClearWidthMeaning`). **Not yet run in Revit:**
+> this change was made without a Revit build. With the default `NominalProxy` every door must still give
+> **Needs review**. Pass or Fail appears only when you declare `ClearOpening`, and that must be used for testing only
+> until a real clear-opening measurement exists.
 
 Model: door types with Width 700, 749, 750, 799, 800, 900 mm. Set **Access door**: tick for Yes; tick
 and untick for No (an untouched Yes/No parameter stores nothing).
@@ -87,3 +88,17 @@ table below.
 | STR `.rte` contains structural instances? | | | |
 | Units and base point of each | | | |
 | Aligned federation achieved with positioning | | | |
+
+## D. Architect rule files (new, not yet run in Revit)
+
+Rules are loaded from the shipped `rule-register.csv` plus every `*.json` file in `%APPDATA%\RevitAccessibility\rules\`
+(the folder is not created for you). Format: see `docs/09-rule-definition-schema.md`.
+
+| # | Step | Expected |
+|---|---|---|
+| D1 | Run with no `rules` folder | Same results as before; the window lists the placeholder rules (`CORR-W`, `RAMP-SLOPE`, `THRESH-H`) under "Rules not run" with reasons. |
+| D2 | Add a valid `*.json` rule for a supported category (see doc 09) with a threshold you choose and a TEST-ONLY source type | Its findings appear; every message carries the UNVERIFIED label; the banner names the rule id. |
+| D3 | Put a file with broken JSON in the folder | The window lists `(file <name>)` under "Rules not run" with the reason; other rules still run. |
+| D4 | Add a rule with an id that already exists in the register | Listed as not run ("Duplicate rule id"); the shipped rule's threshold still applies. |
+| D5 | Add a rule that uses an unimplemented method or rule type | Listed as not run with the `EXE-...` reason; no findings for it. |
+| D6 | Check the status filter and summary | "Needs review" is selectable and counted separately from Cannot evaluate. |

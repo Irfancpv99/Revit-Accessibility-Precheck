@@ -12,7 +12,7 @@ public sealed class ResultRow
         Mark = mark;
         Status = FindingCsvExporter.StatusText(f.Status);
         // Text + icon, never colour alone.
-        StatusIcon = f.Status switch { FindingStatus.Pass => "✔", FindingStatus.Fail => "✖", _ => "?" };
+        StatusIcon = f.Status switch { FindingStatus.Pass => "✔", FindingStatus.Fail => "✖", FindingStatus.NeedsReview => "!", _ => "?" };
         Severity = f.Severity.ToString();
         Message = f.Message;
         Clause = f.ClauseRef;
